@@ -12,6 +12,7 @@ int main(int argc, char *argv[]){
     printf("array size = %d\n", arr_size);
     printf("student id = %d\n", (int)(student_id));
     arraymul_baseline();
+    
     return 0;
 }
 
@@ -21,16 +22,50 @@ void arraymul_baseline(){
     float *p_y = y;
     float id = student_id;// id = your_student_id % 100;
     int arr_length = arr_size;
-    /* original C code
-    for (int i = 0; i < arr_size; i++){
+   // original C code
+   /* for (int i = 0; i < arr_size; i++){
 	    p_y[i] = p_h[i] * p_x[i] + id;
     }
-    */
+   */
     asm volatile(
-        #include "arraymul_baseline.c"
-    : [h] "+r"(p_h), [x] "+r"(p_x), [y] "+r"(p_y), [add_cnt] "+r"(add_cnt), [mul_cnt] "+r"(mul_cnt), [fadd_cnt] "+r"(fadd_cnt), [fmul_cnt] "+r"(fmul_cnt), [flw_cnt] "+r"(flw_cnt), [fsw_cnt] "+r"(fsw_cnt), [lw_cnt] "+r"(lw_cnt), [sw_cnt] "+r"(sw_cnt), [others_cnt] "+r"(others_cnt), [arr_size] "+r"(arr_length)
-    : [id] "f"(id)
-    : "f0", "f1"
+     "li t0,0\n\t"
+     "loop:\n\t"
+     "bge t0,%[arr_length],end_loop\n\t"
+     "slli t1,t0,2\n\t"
+     "add t2, %[h_ptr], t1\n\t"// t2 = h_ptr + i*4
+     "addi %[add_cnt],%[add_cnt],1\n\t"
+     "add t3, %[x_ptr], t1\n\t"// t3 = x_ptr + i*4
+     "addi %[add_cnt],%[add_cnt],1\n\t"
+     "add t4, %[y_ptr], t1\n\t"// t4 = y_ptr + i*4
+     "addi %[add_cnt],%[add_cnt],1\n\t"
+     "flw f0, 0(t2) \n\t"
+     "addi %[lw_cnt],%[lw_cnt],2\n\t"
+     "flw f1, 0(t3) \n\t"
+     "fmul.s f2, f0, f1 \n\t"
+     "addi %[fmul_cnt],%[fmul_cnt],1\n\t"
+     "fadd.s f2, f2, %[id] \n\t"
+     "addi %[fadd_cnt],%[fadd_cnt],1\n\t"
+     "fsw f2, 0(t4) \n\t"
+     "addi %[sw_cnt],%[sw_cnt],1\n\t"
+     "addi t0,t0,1\n\t"
+     "addi %[add_cnt],%[add_cnt],1\n\t"
+     "j loop\n\t"
+     "end_loop:\n\t"
+    :[add_cnt] "+r"(add_cnt), 
+     [mul_cnt] "+r"(mul_cnt), 
+     [fadd_cnt] "+r"(fadd_cnt), 
+     [fmul_cnt] "+r"(fmul_cnt), 
+     [flw_cnt] "+r"(flw_cnt), 
+     [fsw_cnt] "+r"(fsw_cnt), 
+     [lw_cnt] "+r"(lw_cnt), 
+     [sw_cnt] "+r"(sw_cnt), 
+     [others_cnt] "+r"(others_cnt) 
+    :[h_ptr] "r"(p_h),
+     [x_ptr] "r"(p_x),
+     [y_ptr]"r"(p_y),
+     [id] "f"(id),
+     [arr_length] "r"(arr_length)
+    : "f0", "f1","f2","t0","t1","t2","t3","t4"
     );
 
     printf("output: ");
@@ -83,7 +118,6 @@ void init(){
     lw_cnt = 0;
     sw_cnt = 0;
     others_cnt = 0;
-    
     float temp = arr_size;
     while(temp != 1 && temp > 1 )
     {
