@@ -6,6 +6,7 @@
 #include <math.h>
 #include "arraymul.h"
 #include "macro_define.h"
+
 int main(int argc, char *argv[]){
     init();
     input();
@@ -63,18 +64,51 @@ void arraymul_double(){
     double *p_h = u;
     double *p_x = v;
     int arr_length = arr_size;
-    /* original C code
+    // original C code
     for (int i = 0; i < arr_size; i++){
     	double_floating_result = double_floating_result * p_h[i] * p_x[i];
     }
-    */
-   asm volatile(
+   
+   /* asm volatile(
+	"li t0,0\n\t"
+        "loop:\n\t"
+        "bge t0,%[arr_length],end_loop\n\t"
+        "slli t1,t0,3\n\t"
+        "addi %[others_cnt],%[others_cnt],1\n\t"
+        "add t2,%[h_ptr],t1\n\t"
+        "add t3,%[x_ptr],t1\n\t"
+        "addi %[add_cnt],%[add_cnt],2\n\t"
+	"fld f1,0(t2)\n\t"
+        "fld f2,0(t3)\n\t"
+        "addi %[dlw_cnt],%[dlw_cnt],2\n\t"
+        "fmul.d f3,f1,f2\n\t"
+        "fmul.d %[double_floating_result],%[double_floating_result],f3\n\t"
+        "addi %[dmul_cnt],%[dmul_cnt],2\n\t"
+        "addi t0,t0,1\n\t"
+        "addi %[add_cnt],%[add_cnt],1\n\t"
+        "j loop\n\t"
+        "end_loop:\n\t"
+	:[double_floating_result]"+f"(double_floating_result),
+         [add_cnt]"+r"(add_cnt),
+         [dadd_cnt] "+r"(dadd_cnt),
+         [dmul_cnt] "+r"(dmul_cnt),
+         [dlw_cnt] "+r"(dlw_cnt),
+         [dsw_cnt] "+r"(dsw_cnt),
+         [others_cnt] "+r"(others_cnt)
+        :[arr_length]"r"(arr_length),
+         [h_ptr] "r"(p_h),
+         [x_ptr] "r"(p_x)
+        :"t0","t1","t2","t3","f1","f2","f3","f4"
+
+		);	    
+*/ 
+    /* asm volatile(
     #include "arraymul_double.c"
     : [h] "+r"(p_h), [x] "+r"(p_x), [result] "+f"(double_floating_result), [add_cnt] "+r"(add_cnt), [dadd_cnt] "+r"(dadd_cnt), [dmul_cnt] "+r"(dmul_cnt), [dlw_cnt] "+r"(dlw_cnt), [dsw_cnt] "+r"(dsw_cnt), [others_cnt] "+r"(others_cnt), [arr_size] "+r"(arr_length)
     :
     : "t0", "f0", "f1", "f2", "f3"
 );
-
+*/
 }
 
 void init(){
