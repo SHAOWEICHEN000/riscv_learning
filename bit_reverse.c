@@ -1,0 +1,28 @@
+"addi %[lw_cnt], %[lw_cnt], 1\n\t"
+"li %[result], 0\n\t"//result=0
+"addi %[lw_cnt], %[lw_cnt], 1\n\t"
+        "li t4,0\n\t"//i=0
+        "loop_bit:\n\t"
+"addi %[others_cnt], %[others_cnt], 1\n\t"
+        "bge t4,%[m],end_bit\n\t"
+"addi %[others_cnt], %[others_cnt], 1\n\t"
+        "srl t0,%[b],t4\n\t"
+"addi %[others_cnt], %[others_cnt], 1\n\t"
+        "and t1,t0,1\n\t"
+"addi %[add_cnt], %[add_cnt], 1\n\t"
+        "addi t2,t1,0\n\t"
+        
+"addi %[add_cnt], %[add_cnt], 1\n\t"
+        "addi t3,%[m],-1\n\t"
+
+"addi %[sub_cnt], %[sub_cnt], 1\n\t"
+        "sub  t5,t3,t4\n\t"
+"addi %[others_cnt], %[others_cnt], 1\n\t"
+        "sll t6,t2,t5\n\t"
+"addi %[others_cnt], %[others_cnt], 1\n\t"
+        "or  %[result],%[result],t6\n\t"
+"addi %[add_cnt], %[add_cnt], 1\n\t"
+        "addi t4,t4,1\n\t"
+"addi %[others_cnt], %[others_cnt], 1\n\t"
+        "j loop_bit\n\t"
+        "end_bit:\n\t"

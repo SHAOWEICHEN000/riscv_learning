@@ -65,10 +65,10 @@ const int dlw_CPI = 20;
 const int dsw_CPI = 15;
 
 // Cycle count
+float arraymul_baseline_cycle_count_2_1 = 0.0;
 float arraymul_baseline_cycle_count = 0.0;
 float arraymul_vector_cycle_count = 0.0;
-float arraymul_double_cycle_count = 0.0;
-
+float  arraymul_double_cycle_count = 0.0;
 // ratio
 float arraymul_baseline_ratio = 0.0;
 
@@ -77,6 +77,7 @@ const int cycle_time = 384; // us
 
 // CPU time
 float arraymul_baseline_cpu_time = 0.0;
+float arraymul_baseline_cpu_time_2_1 = 0.0;
 float arraymul_vector_cpu_time = 0.0;
 float arraymul_double_cpu_time = 0.0;
 

@@ -25,13 +25,14 @@ void arraymul_baseline(){
    // original C code
    /* for (int i = 0; i < arr_size; i++){
 	    p_y[i] = p_h[i] * p_x[i] + id;
-    }
-   */
-    asm volatile(
+    }*/
+   
+   asm volatile(
      "li t0,0\n\t"
      "loop:\n\t"
      "bge t0,%[arr_length],end_loop\n\t"
      "slli t1,t0,2\n\t"
+     "addi %[others_cnt],%[others_cnt],1\n\t"
      "add t2, %[h_ptr], t1\n\t"// t2 = h_ptr + i*4
      "addi %[add_cnt],%[add_cnt],1\n\t"
      "add t3, %[x_ptr], t1\n\t"// t3 = x_ptr + i*4
@@ -39,14 +40,14 @@ void arraymul_baseline(){
      "add t4, %[y_ptr], t1\n\t"// t4 = y_ptr + i*4
      "addi %[add_cnt],%[add_cnt],1\n\t"
      "flw f0, 0(t2) \n\t"
-     "addi %[lw_cnt],%[lw_cnt],2\n\t"
+     "addi %[flw_cnt],%[flw_cnt],2\n\t"
      "flw f1, 0(t3) \n\t"
      "fmul.s f2, f0, f1 \n\t"
      "addi %[fmul_cnt],%[fmul_cnt],1\n\t"
      "fadd.s f2, f2, %[id] \n\t"
      "addi %[fadd_cnt],%[fadd_cnt],1\n\t"
      "fsw f2, 0(t4) \n\t"
-     "addi %[sw_cnt],%[sw_cnt],1\n\t"
+     "addi %[fsw_cnt],%[fsw_cnt],1\n\t"
      "addi t0,t0,1\n\t"
      "addi %[add_cnt],%[add_cnt],1\n\t"
      "j loop\n\t"
@@ -57,8 +58,6 @@ void arraymul_baseline(){
      [fmul_cnt] "+r"(fmul_cnt), 
      [flw_cnt] "+r"(flw_cnt), 
      [fsw_cnt] "+r"(fsw_cnt), 
-     [lw_cnt] "+r"(lw_cnt), 
-     [sw_cnt] "+r"(sw_cnt), 
      [others_cnt] "+r"(others_cnt) 
     :[h_ptr] "r"(p_h),
      [x_ptr] "r"(p_x),
@@ -89,11 +88,11 @@ void arraymul_baseline(){
     printf("fsw counter used: %d\n", fsw_cnt);
     printf("others counter used: %d\n", others_cnt);
 	
-    macro_arraymul_baseline_cycle_count
-    printf("The total cycle count in this program: %.0f\n", arraymul_baseline_cycle_count);
+    macro_arraymul_baseline_cycle_count_2_1;
+    printf("The total cycle count in this program: %.0f\n", arraymul_baseline_cycle_count_2_1);
 
-    macro_arraymul_baseline_cpu_time
-    printf("CPU time = %f us\n", arraymul_baseline_cpu_time);
+    macro_arraymul_baseline_cpu_time_2_1;
+    printf("CPU time = %f us\n", arraymul_baseline_cpu_time_2_1);
     
     macro_calc_arraymul_baseline_ratio
     

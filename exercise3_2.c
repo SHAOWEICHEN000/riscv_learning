@@ -6,11 +6,14 @@
 #include <math.h>
 #include "arraymul.h"
 #include "macro_define.h"
-
+#include<stdint.h>
 int main(int argc, char *argv[]){
     init();
     input();
+    double_floating_result=1.0;
     arraymul_double();
+   // macro_3_2_start;
+   // macro_3_2_end;
     printf("===== Question 3-2 =====\n");
 
     printf("array size = %d\n", arr_size);
@@ -33,28 +36,29 @@ int main(int argc, char *argv[]){
     printf("dlw counter used: %d\n", dlw_cnt);
     printf("dsw counter used: %d\n", dsw_cnt);
     printf("others counter used: %d\n", others_cnt);
-	
-    macro_arraymul_double_cycle_count
-    printf("The total cycle count in this program: %.0f\n", arraymul_double_cycle_count);
+    macro_arraymul_double_cycle_count;
+    printf("The total cycle count in this program: %0.0f \n", arraymul_double_cycle_count);
 
-    macro_arraymul_double_cpu_time
+    macro_arraymul_double_cpu_time;
     printf("CPU time = %f us\n", arraymul_double_cpu_time);
     
-    float speedup = 0.0;
-    
+    //float speedup = 0.0;
+    float speedup=5.0;
     FILE *fp_2;
     fp_2 = fopen("float_cpu_time.txt", "r");
     fscanf(fp_2, "%f", &speedup);
     fclose(fp_2);
     speedup = arraymul_double_cpu_time / speedup;
+    
     printf("double floating-point calculation is %f times slower than single floating-point calculation\n", speedup);
     
-    float float_result = 0.0;
-    double relative_error = 0.0;
+    float float_result = 418750.968750;
+    double relative_error = 1.0;
     FILE *fp3;
     fp3 = fopen("float_result.txt", "r");
     fscanf(fp3, "%f", &float_result);
     fclose(fp3);
+    
     relative_error = (fabs(float_result - double_floating_result) / double_floating_result);
     printf("error between float and double is %.15f\n", relative_error);
     return 0;
@@ -65,11 +69,11 @@ void arraymul_double(){
     double *p_x = v;
     int arr_length = arr_size;
     // original C code
-    for (int i = 0; i < arr_size; i++){
+    /*for (int i = 0; i < arr_size; i++){
     	double_floating_result = double_floating_result * p_h[i] * p_x[i];
     }
-   
-   /* asm volatile(
+   */
+    asm volatile(
 	"li t0,0\n\t"
         "loop:\n\t"
         "bge t0,%[arr_length],end_loop\n\t"
@@ -100,8 +104,7 @@ void arraymul_double(){
          [x_ptr] "r"(p_x)
         :"t0","t1","t2","t3","f1","f2","f3","f4"
 
-		);	    
-*/ 
+		);	     
     /* asm volatile(
     #include "arraymul_double.c"
     : [h] "+r"(p_h), [x] "+r"(p_x), [result] "+f"(double_floating_result), [add_cnt] "+r"(add_cnt), [dadd_cnt] "+r"(dadd_cnt), [dmul_cnt] "+r"(dmul_cnt), [dlw_cnt] "+r"(dlw_cnt), [dsw_cnt] "+r"(dsw_cnt), [others_cnt] "+r"(others_cnt), [arr_size] "+r"(arr_length)

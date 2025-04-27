@@ -18,7 +18,9 @@ Complex complex_add(Complex a, Complex b)
     //result.Re = a.Re + b.Re;
     //result.Im = a.Im + b.Im;
     //fadd_cnt += 2;  // 分別減了實部與虛部
+
     asm volatile(
+  	 	
 	"fadd.s  %[C_Re],     %[A_Re],     %[B_Re] \n\t"
         "addi    %[fadd_cnt], %[fadd_cnt], 1       \n\t"
         "fadd.s  %[C_Im],     %[A_Im],     %[B_Im] \n\t"
@@ -35,11 +37,12 @@ Complex complex_sub(Complex a, Complex b)
     //result.Im = a.Im - b.Im;
     //fsub_cnt += 2;
     asm volatile(
-       	"fsub.s   %[C_Re],      %[A_Re],     %[B_Re] \n\t"
+	
+      "fsub.s   %[C_Re],      %[A_Re],     %[B_Re] \n\t"
         "addi     %[fsub_cnt],  %[fsub_cnt], 1       \n\t"
         "fsub.s   %[C_Im],      %[A_Im],     %[B_Im] \n\t"
         "addi     %[fsub_cnt],  %[fsub_cnt], 1       \n\t"
-
+      
         :[C_Re] "=f"(result.Re), [C_Im] "=f"(result.Im), [fsub_cnt] "+r"(fsub_cnt)
         :[A_Re] "f"(a.Re), [B_Re] "f"(b.Re), [A_Im] "f"(a.Im), [B_Im] "f"(b.Im));
     return result;
@@ -59,7 +62,6 @@ Complex complex_mul(Complex a, Complex b)
     fsub_cnt += 1;  // 一次減法（實部）
 */
 float temp1, temp2, temp3, temp4;
-
     asm volatile(
         "fmul.s %[out], %[in1], %[in2]\n\t"
 	"addi     %[fmul_cnt],  %[fmul_cnt], 1       \n\t"
@@ -102,6 +104,7 @@ float temp1, temp2, temp3, temp4;
         : [out] "=f" (result.Im),[fadd_cnt]"+r"(fadd_cnt)
         : [in1] "f" (temp3), [in2] "f" (temp4)
     );
+    
     return result;
 }
 
@@ -116,19 +119,20 @@ uint32_t Log2(uint32_t N)
 */
 
     asm volatile(
+     
         "mv t0, %[N]                            \n\t"
         "mv t1, x0                              \n\t"
         "addi %[others_cnt],%[others_cnt],2     \n\t"
     "loop:                                      \n\t"
         "srli t0, t0, 1                         \n\t"
-	"addi %[others_cnt],%[others_cnt],2     \n\t"
+	"addi %[others_cnt],%[others_cnt],3     \n\t"
         "beqz t0, end_loop                      \n\t"
         "addi t1, t1, 1                         \n\t"
 	"addi %[add_cnt],%[add_cnt],1           \n\t"
         "j loop                                 \n\t"
     "end_loop:                                  \n\t"
         "mv %[log], t1                          \n\t"
-        "addi %[others_cnt],%[others_cnt],2     \n\t"
+        
 
         : [log] "+r"(log), 
 	  [add_cnt] "+r"(add_cnt), 
@@ -172,7 +176,6 @@ float PI(void)
     "fdiv.s ft0, ft1, ft0            \n\t" // ft0 = 1.0 / denominator
     "addi %[fdiv_cnt], %[fdiv_cnt], 1 \n\t" // 1次 fdiv
     "fcvt.s.w ft1, t1               \n\t" // ft1 = float(sign)
-    "addi %[lw_cnt], %[lw_cnt], 1     \n\t"
     "fmul.s ft0, ft0, ft1            \n\t" // ft0 = (1/denominator) * sign
     "addi %[mul_cnt], %[mul_cnt], 1 \n\t" // 1次 mul(actually is fmul)
     "fadd.s %[pi], %[pi], ft0        \n\t" // pi += ft0
@@ -181,7 +184,8 @@ float PI(void)
     "addi %[others_cnt], %[others_cnt], 1 \n\t"
     "addi t2, t2, 2                  \n\t" // denominator += 2
     "addi %[add_cnt], %[add_cnt], 2 \n\t"
-    "addi t4, t4, 1                  \n\t" // i += 1
+    "addi t4, t4, 1                  \n\t" // i += 0
+    "addi %[others_cnt], %[others_cnt], 1 \n\t"
     "j loop_pi                      \n\t"
 "end_pi:                              \n\t"
     "li t5, 0x40800000              \n\t"
@@ -207,19 +211,19 @@ float PI(void)
 uint32_t bit_reverse(uint32_t b, uint32_t m)
 {
 	uint32_t result = 0;
-    for (uint32_t i = 0; i < m; i++) {
+   /* for (uint32_t i = 0; i < m; i++) {
         uint32_t bit = (b >> i) & 1;
         result |= bit << ((m - 1) - i);
-    }
+    }*/
 asm volatile(
+
 	"li %[result], 0\n\t"//result=0
 	"li t4,0\n\t"//i=0
 	"loop_bit:\n\t"
 	"bge t4,%[m],end_bit\n\t"
 	"srl t0,%[b],t4\n\t"
-	"addi %[others_cnt],%[others_cnt],1\n\t"
+	"addi %[others_cnt],%[others_cnt],6\n\t"
 	"and t1,t0,1\n\t"
-	"addi %[others_cnt],%[others_cnt],1\n\t"
 	"addi t2,t1,0\n\t"
 	
 	"addi t3,%[m],-1\n\t"
