@@ -5,6 +5,7 @@
 #include "fft.h"
 #include "macro_define.h"
 
+
 typedef struct {
     float Re;
     float Im;
@@ -60,60 +61,47 @@ Complex complex_mul(Complex a, Complex b)
 float temp1, temp2, temp3, temp4;
 
     asm volatile(
-        "fmul.s %[out], %[in1], %[in2]"
-        : [out] "=f" (temp1)
+        "fmul.s %[out], %[in1], %[in2]\n\t"
+	"addi     %[fmul_cnt],  %[fmul_cnt], 1       \n\t"
+
+        : [out] "=f" (temp1),[fmul_cnt]"+r"(fmul_cnt)
         : [in1] "f" (a.Re), [in2] "f" (b.Re)
     );
 
     asm volatile(
-        "fmul.s %[out], %[in1], %[in2]"
-        : [out] "=f" (temp2)
+        "fmul.s %[out], %[in1], %[in2]\n\t"
+	"addi     %[fmul_cnt],  %[fmul_cnt], 1       \n\t"
+        : [out] "=f" (temp2),[fmul_cnt]"+r"(fmul_cnt)
         : [in1] "f" (a.Im), [in2] "f" (b.Im)
     );
 
     asm volatile(
-        "fsub.s %[out], %[in1], %[in2]"
-        : [out] "=f" (result.Re)
+        "fsub.s %[out], %[in1], %[in2]\n\t"
+	"addi     %[fsub_cnt],  %[fsub_cnt], 1       \n\t"
+        : [out] "=f" (result.Re),[fsub_cnt]"+r"(fsub_cnt)
         : [in1] "f" (temp1), [in2] "f" (temp2)
     );
 
     asm volatile(
-        "fmul.s %[out], %[in1], %[in2]"
-        : [out] "=f" (temp3)
+        "fmul.s %[out], %[in1], %[in2]\n\t"
+	"addi     %[fmul_cnt],  %[fmul_cnt], 1       \n\t"
+        : [out] "=f" (temp3),[fmul_cnt]"+r"(fmul_cnt)
         : [in1] "f" (a.Re), [in2] "f" (b.Im)
     );
 
     asm volatile(
-        "fmul.s %[out], %[in1], %[in2]"
-        : [out] "=f" (temp4)
+        "fmul.s %[out], %[in1], %[in2]\n\t"
+	"addi     %[fmul_cnt],  %[fmul_cnt], 1       \n\t"
+        : [out] "=f" (temp4),[fmul_cnt]"+r"(fmul_cnt)
         : [in1] "f" (a.Im), [in2] "f" (b.Re)
     );
 
     asm volatile(
-        "fadd.s %[out], %[in1], %[in2]"
-        : [out] "=f" (result.Im)
+        "fadd.s %[out], %[in1], %[in2]\n\t"
+	"addi     %[fadd_cnt],  %[fadd_cnt], 1       \n\t"
+        : [out] "=f" (result.Im),[fadd_cnt]"+r"(fadd_cnt)
         : [in1] "f" (temp3), [in2] "f" (temp4)
     );
-
-    fmul_cnt += 4;
-    fadd_cnt += 1;
-    fsub_cnt += 1;
-/*  asm volatile(
-
-         "fmul.s  f1,          %[A_Re], %[B_Re]      \n\t"
-        "fmul.s  f2,          %[A_Im], %[B_Im]      \n\t"
-        "fsub.s  %[C_Re],     f1,      f2           \n\t"
-        "fmul.s  f3,          %[A_Re], %[B_Im]      \n\t"
-        "fmul.s  f4,          %[A_Im], %[B_Re]      \n\t"
-        "fadd.s  %[C_Im],     f3,      f4           \n\t"
-        "addi    %[fadd_cnt], %[fadd_cnt],      1   \n\t"
-        "addi    %[fsub_cnt], %[fsub_cnt],      1   \n\t"
- 	"addi    %[fmul_cnt], %[fmul_cnt],      4   \n\t"
-        : [C_Re] "=f"(result.Re), [C_Im] "=f"(result.Im), [fmul_cnt] "+r"(fmul_cnt), [fsub_cnt] "+r"(fsub_cnt), [fadd_cnt] "+r"(fadd_cnt)
-        : [A_Re] "f"(a.Re), [B_Re] "f"(b.Re),
-        [A_Im] "f"(a.Im), [B_Im] "f"(b.Im)
-        : "f1", "f2", "f3", "f4"
-    );*/
     return result;
 }
 
@@ -130,18 +118,21 @@ uint32_t Log2(uint32_t N)
     asm volatile(
         "mv t0, %[N]                            \n\t"
         "mv t1, x0                              \n\t"
-        "addi %[others_cnt],%[others_cnt],1     \n\t"
+        "addi %[others_cnt],%[others_cnt],2     \n\t"
     "loop:                                      \n\t"
         "srli t0, t0, 1                         \n\t"
+	"addi %[others_cnt],%[others_cnt],2     \n\t"
         "beqz t0, end_loop                      \n\t"
         "addi t1, t1, 1                         \n\t"
+	"addi %[add_cnt],%[add_cnt],1           \n\t"
         "j loop                                 \n\t"
-        "addi %[add_cnt],%[add_cnt],1           \n\t"
     "end_loop:                                  \n\t"
         "mv %[log], t1                          \n\t"
-        
+        "addi %[others_cnt],%[others_cnt],2     \n\t"
 
-        : [log] "+r"(log), [add_cnt] "+r"(add_cnt), [others_cnt] "+r"(others_cnt) 
+        : [log] "+r"(log), 
+	  [add_cnt] "+r"(add_cnt), 
+	  [others_cnt] "+r"(others_cnt) 
         :[N]"r"(N)
         : "t0", "t1"
     );
@@ -158,8 +149,7 @@ float PI(void)
     *    pi/4 = (1 - 1/3 + 1/5 - 1/7 + 1/9 - ...)
     *    pi   = 4(1 - 1/3 + 1/5 - 1/7 + 1/9 - ...)
     * 
-    */
-	int iter=2000;
+    **/
     float pi = 0.0f;
 /*    int sign = 1;
     int denominator = 1;
@@ -176,20 +166,36 @@ float PI(void)
 "loop_pi:                             \n\t"
     "bge t4, %[N], end_pi           \n\t"
     "fcvt.s.w ft0, t2               \n\t" // ft0 = float(denominator)
+    "addi %[lw_cnt], %[lw_cnt],  1    \n\t"
     "li t5, 0x3f800000 		    \n\t"	
-    "fmv.w.x ft1, t5                  \n\t" // ft1 = 1.0
+    "fmv.w.x ft1, t5                  \n\t" // ft1 = 1.
     "fdiv.s ft0, ft1, ft0            \n\t" // ft0 = 1.0 / denominator
+    "addi %[fdiv_cnt], %[fdiv_cnt], 1 \n\t" // 1次 fdiv
     "fcvt.s.w ft1, t1               \n\t" // ft1 = float(sign)
+    "addi %[lw_cnt], %[lw_cnt], 1     \n\t"
     "fmul.s ft0, ft0, ft1            \n\t" // ft0 = (1/denominator) * sign
+    "addi %[mul_cnt], %[mul_cnt], 1 \n\t" // 1次 mul(actually is fmul)
     "fadd.s %[pi], %[pi], ft0        \n\t" // pi += ft0
+    "addi %[fadd_cnt], %[fadd_cnt], 1\n\t" // 1次 fadd
     "neg t1, t1                     \n\t" // sign = -sign
+    "addi %[others_cnt], %[others_cnt], 1 \n\t"
     "addi t2, t2, 2                  \n\t" // denominator += 2
+    "addi %[add_cnt], %[add_cnt], 2 \n\t"
     "addi t4, t4, 1                  \n\t" // i += 1
     "j loop_pi                      \n\t"
 "end_pi:                              \n\t"
     "li t5, 0x40800000              \n\t"
     "fmv.w.x ft1, t5                  \n\t"
-    : [pi] "+f" (pi)
+    "addi %[add_cnt], %[add_cnt], 4 \n\t"
+    : [pi] "+f" (pi),
+      [add_cnt]"+r"(add_cnt),
+      [fadd_cnt] "+r"(fadd_cnt), 
+      [fsub_cnt]"+r"(fsub_cnt), 
+      [mul_cnt]"+r"(mul_cnt),
+      [fdiv_cnt] "+r"(fdiv_cnt), 
+      [lw_cnt] "+r"(lw_cnt), 
+      [sw_cnt] "+r"(sw_cnt),
+      [others_cnt] "+r"(others_cnt)
     : [N] "r" (iter)
     : "t0", "t1", "t2", "t4","t5", "ft0", "ft1"
 );
@@ -211,16 +217,25 @@ asm volatile(
 	"loop_bit:\n\t"
 	"bge t4,%[m],end_bit\n\t"
 	"srl t0,%[b],t4\n\t"
+	"addi %[others_cnt],%[others_cnt],1\n\t"
 	"and t1,t0,1\n\t"
+	"addi %[others_cnt],%[others_cnt],1\n\t"
 	"addi t2,t1,0\n\t"
+	
 	"addi t3,%[m],-1\n\t"
+
 	"sub  t5,t3,t4\n\t"
 	"sll t6,t2,t5\n\t"
+	"addi %[others_cnt],%[others_cnt],1\n\t"
 	"or  %[result],%[result],t6\n\t"
+	"addi %[others_cnt],%[others_cnt],1\n\t"
 	"addi t4,t4,1\n\t"
 	"j loop_bit\n\t"
 	"end_bit:\n\t"
-	:[result] "+r"(result)
+	:[result] "+r"(result),
+	 [add_cnt]"+r"(add_cnt),
+	 [sub_cnt]"+r"(sub_cnt),
+	 [others_cnt]"+r"(others_cnt)
 	:[m] "r"(m),[b] "r"(b)
 	:"t4","t0","t1","t2","t3","t5","t6"
 	    );
@@ -291,6 +306,8 @@ int main() {
         return 1;
     }
 
+float pi;
+
     Complex *data = malloc(N * sizeof(Complex));
     if (data == NULL) {
         perror("Memory allocation failed");
@@ -331,7 +348,7 @@ int main() {
     macro_fft_cpu_time
     printf("CPU time = %f us\n", fft_cpu_time);
     
-    macro_calc_fft_ratio
+    macro_calc_fft_ratio 
     
     if(fft_ratio > 0.5){
         printf("This program is a CPU bound task.\n");
