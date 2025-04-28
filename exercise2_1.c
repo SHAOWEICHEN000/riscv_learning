@@ -93,19 +93,18 @@ void arraymul_baseline(){
 
     macro_arraymul_baseline_cpu_time_2_1;
     printf("CPU time = %f us\n", arraymul_baseline_cpu_time_2_1);
-    
+       //record the cpu time
+    FILE *fp1;
+    fp1 = fopen("arraymul_baseline_cpu_time.txt", "w");
+    fprintf(fp1, "%f", arraymul_baseline_cpu_time_2_1);
+    fclose(fp1);
+ 
     macro_calc_arraymul_baseline_ratio
     
     if(arraymul_baseline_ratio > 0.5)
         printf("This program is a CPU bound task.\n");
     else
         printf("This program is a Memory bound task.\n");
-    
-    //record the cpu time
-    FILE *fp;
-    fp = fopen("arraymul_baseline_cpu_time.txt", "w");
-    fprintf(fp, "%f", arraymul_baseline_cpu_time);
-    fclose(fp);
 }
 
 

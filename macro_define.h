@@ -1,8 +1,7 @@
 #define macro_fft_cycle_count fft_cycle_count=add_CPI*add_cnt+sub_CPI*sub_cnt+mul_CPI*mul_cnt+div_CPI*div_cnt+lw_CPI*lw_cnt+sw_CPI*sw_cnt+others_CPI*others_cnt+fadd_CPI*fadd_cnt+fsub_CPI*fsub_cnt+fmul_CPI*fmul_cnt+fdiv_CPI*fdiv_cnt;
 #define macro_fft_cpu_time fft_cpu_time = (float)(fft_cycle_count*384.0);
-#define macro_arraymul_vector_cycle_count arraymul_vector_cycle_count =fadd_cnt*fadd_CPI+fmul_cnt*fmul_CPI+flw_cnt*flw_CPI+fsw_cnt*fsw_CPI;
-#define macro_arraymul_vector_cpu_time arraymul_vector_cpu_time =(float)(arraymul_vector_cycle_count*384.0); 
-
+#define macro_arraymul_vector_cycle_count arraymul_vector_cycle_count =0;
+#define macro_arraymul_vector_cpu_time arraymul_vector_cpu_time =0; 
 #define macro_arraymul_baseline_cycle_count_2_1 arraymul_baseline_cycle_count_2_1 = fadd_CPI *fadd_cnt+fsub_CPI*fsub_cnt+fmul_CPI*fmul_cnt+fdiv_CPI*fdiv_cnt+flw_CPI*flw_cnt+fsw_CPI*fsw_cnt+add_CPI*add_cnt+others_CPI*others_cnt+mul_CPI*mul_cnt+lw_cnt*lw_CPI+sw_cnt*sw_CPI;
 
 #define macro_arraymul_baseline_cycle_count arraymul_baseline_cycle_count = fadd_CPI *fadd_cnt+fsub_CPI*fsub_cnt+fmul_CPI*fmul_cnt+fdiv_CPI*fdiv_cnt+flw_CPI*flw_cnt+fsw_CPI*fsw_cnt+add_CPI*add_cnt+others_CPI*others_cnt;
